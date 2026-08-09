@@ -34,6 +34,7 @@ export default function LoginScreen() {
     setIsSubmitting(true);
     try {
       await login(data);
+    //   #Alert.alert('Success', 'Login worked! Tokens saved.');
     } catch (error: any) {
       const message =
         error?.response?.data?.message || 'Login failed. Please check your credentials.';
