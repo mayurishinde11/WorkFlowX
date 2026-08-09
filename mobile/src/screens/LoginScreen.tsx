@@ -17,8 +17,11 @@ import { loginSchema, LoginFormData } from '../utils/validation';
 import { useAuth } from '../store/AuthContext';
 import { colors, spacing, typography, radius } from '../theme';
 
-export default function LoginScreen() {
-  const { login } = useAuth();
+interface LoginScreenProps {
+  onSwitchToRegister: () => void;
+}
+
+export default function LoginScreen({ onSwitchToRegister }: LoginScreenProps) {  const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -104,6 +107,11 @@ export default function LoginScreen() {
               <Text style={styles.buttonText}>Sign In</Text>
             )}
           </TouchableOpacity>
+          <TouchableOpacity style={styles.linkButton} onPress={onSwitchToRegister}>
+            <Text style={styles.linkText}>
+              Don't have an account? <Text style={styles.linkTextBold}>Sign Up</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -170,5 +178,17 @@ const styles = StyleSheet.create({
   buttonText: {
     ...typography.bodyBold,
     color: colors.textInverse,
+  },
+  linkButton: {
+    marginTop: spacing.lg,
+    alignItems: 'center',
+  },
+  linkText: {
+    ...typography.body,
+    color: colors.textSecondary,
+  },
+  linkTextBold: {
+    color: colors.primary,
+    fontWeight: '600',
   },
 });
