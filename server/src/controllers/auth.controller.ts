@@ -2,9 +2,8 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import prisma from '../lib/prisma';
 import { hashPassword, comparePassword } from '../utils/password';
-import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
-import { registerSchema, loginSchema } from '../validators/auth.validator';
-
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
+import { registerSchema, loginSchema, refreshSchema } from '../validators/auth.validator';
 export async function register(req: AuthRequest, res: Response) {  try {
     const parsed = registerSchema.safeParse(req.body);
 
@@ -174,6 +173,60 @@ export async function getMe(req: AuthRequest, res: Response) {
     });
   } catch (error) {
     console.error('GetMe error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong',
+    });
+  }
+}
+
+export async function refresh(req: AuthRequest, res: Response) {
+  try {
+    const parsed = refreshSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const { refreshToken } = parsed.data;
+
+    let decoded;
+    try {
+      decoded = verifyRefreshToken(refreshToken);
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired refresh token',
+      });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+
+    if (!user || !user.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found or inactive',
+      });
+    }
+
+    const tokenPayload = { userId: user.id, companyId: user.companyId, role: user.role };
+    const newAccessToken = generateAccessToken(tokenPayload);
+    const newRefreshToken = generateRefreshToken(tokenPayload);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Token refreshed successfully',
+      data: {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      },
+    });
+  } catch (error) {
+    console.error('Refresh error:', error);
     return res.status(500).json({
       success: false,
       message: 'Something went wrong',
