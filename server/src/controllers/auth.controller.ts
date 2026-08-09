@@ -1,11 +1,11 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '../middleware/auth.middleware';
 import prisma from '../lib/prisma';
 import { hashPassword, comparePassword } from '../utils/password';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 import { registerSchema, loginSchema } from '../validators/auth.validator';
 
-export async function register(req: Request, res: Response) {
-  try {
+export async function register(req: AuthRequest, res: Response) {  try {
     const parsed = registerSchema.safeParse(req.body);
 
     if (!parsed.success) {
@@ -86,7 +86,7 @@ export async function register(req: Request, res: Response) {
   }
 }
 
-export async function login(req: Request, res: Response) {
+export async function login(req: AuthRequest, res: Response) {
   try {
     const parsed = loginSchema.safeParse(req.body);
 
@@ -141,6 +141,42 @@ export async function login(req: Request, res: Response) {
     return res.status(500).json({
       success: false,
       message: 'Something went wrong during login',
+    });
+  }
+}
+
+export async function getMe(req: AuthRequest, res: Response) {
+  try {
+    const userId = req.user?.userId;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        companyId: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: { user },
+    });
+  } catch (error) {
+    console.error('GetMe error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong',
     });
   }
 }
