@@ -13,8 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({
+app.get('/api/health', (_req: Request, res: Response) => {  res.json({
     success: true,
     message: 'WorkFlowX API is running',
   });
