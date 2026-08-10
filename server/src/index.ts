@@ -4,7 +4,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import authRoutes from './routes/auth.routes';
-
+import employeeRoutes from './routes/employee.routes';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -21,7 +21,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
 });
 
 app.use('/api/auth', authRoutes);
-
+app.use('/api/employees', employeeRoutes);
 app.listen(PORT, () => {
   console.log('WorkFlowX server running on http://localhost:' + PORT);
 });
