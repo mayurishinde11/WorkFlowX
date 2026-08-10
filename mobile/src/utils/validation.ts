@@ -17,3 +17,13 @@ export const registerSchema = z.object({
 });
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
+
+export const createEmployeeSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().min(1, 'Email is required').email('Enter a valid email'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  role: z.enum(['MANAGER', 'EMPLOYEE']),
+});
+
+export type CreateEmployeeFormData = z.infer<typeof createEmployeeSchema>;
