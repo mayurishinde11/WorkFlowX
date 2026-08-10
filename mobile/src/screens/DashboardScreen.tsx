@@ -6,9 +6,13 @@ import { colors, spacing, typography, radius } from '../theme';
 
 interface DashboardScreenProps {
   onNavigateToEmployees: () => void;
+  onNavigateToCustomers: () => void;
 }
 
-export default function DashboardScreen({ onNavigateToEmployees }: DashboardScreenProps) {
+export default function DashboardScreen({
+  onNavigateToEmployees,
+  onNavigateToCustomers,
+}: DashboardScreenProps) {
   const { user, logout } = useAuth();
 
   return (
@@ -22,6 +26,10 @@ export default function DashboardScreen({ onNavigateToEmployees }: DashboardScre
           <Text style={styles.menuCardSubtitle}>Manage your team</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.menuCard} onPress={onNavigateToCustomers}>
+          <Text style={styles.menuCardTitle}>🏢 Customers</Text>
+          <Text style={styles.menuCardSubtitle}>Manage your customers</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>

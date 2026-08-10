@@ -8,6 +8,8 @@ import RegisterScreen from '../screens/RegisterScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import EmployeeListScreen from '../screens/EmployeeListScreen';
 import CreateEmployeeScreen from '../screens/CreateEmployeeScreen';
+import CustomerListScreen from '../screens/CustomerListScreen';
+import CreateCustomerScreen from '../screens/CreateCustomerScreen';
 import { colors } from '../theme';
 
 const Stack = createNativeStackNavigator();
@@ -22,7 +24,12 @@ function AuthFlow() {
   return <LoginScreen onSwitchToRegister={() => setShowRegister(true)} />;
 }
 
-type MainScreen = 'dashboard' | 'employeeList' | 'createEmployee';
+type MainScreen =
+  | 'dashboard'
+  | 'employeeList'
+  | 'createEmployee'
+  | 'customerList'
+  | 'createCustomer';
 
 function MainFlow() {
   const [screen, setScreen] = useState<MainScreen>('dashboard');
@@ -45,7 +52,30 @@ function MainFlow() {
     );
   }
 
-  return <DashboardScreen onNavigateToEmployees={() => setScreen('employeeList')} />;
+  if (screen === 'customerList') {
+    return (
+      <CustomerListScreen
+        onBack={() => setScreen('dashboard')}
+        onAddCustomer={() => setScreen('createCustomer')}
+      />
+    );
+  }
+
+  if (screen === 'createCustomer') {
+    return (
+      <CreateCustomerScreen
+        onBack={() => setScreen('customerList')}
+        onSuccess={() => setScreen('customerList')}
+      />
+    );
+  }
+
+  return (
+    <DashboardScreen
+      onNavigateToEmployees={() => setScreen('employeeList')}
+      onNavigateToCustomers={() => setScreen('customerList')}
+    />
+  );
 }
 
 export default function RootNavigator() {

@@ -27,3 +27,13 @@ export const createEmployeeSchema = z.object({
 });
 
 export type CreateEmployeeFormData = z.infer<typeof createEmployeeSchema>;
+
+export const createCustomerSchema = z.object({
+  name: z.string().min(1, 'Customer name is required'),
+  phone: z.string().optional(),
+  email: z.string().email('Enter a valid email').optional().or(z.literal('')),
+  address: z.string().min(1, 'Address is required'),
+  notes: z.string().optional(),
+});
+
+export type CreateCustomerFormData = z.infer<typeof createCustomerSchema>;
