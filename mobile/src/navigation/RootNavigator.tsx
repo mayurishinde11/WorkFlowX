@@ -10,6 +10,9 @@ import EmployeeListScreen from '../screens/EmployeeListScreen';
 import CreateEmployeeScreen from '../screens/CreateEmployeeScreen';
 import CustomerListScreen from '../screens/CustomerListScreen';
 import CreateCustomerScreen from '../screens/CreateCustomerScreen';
+import TaskListScreen from '../screens/TaskListScreen';
+import CreateTaskScreen from '../screens/CreateTaskScreen';
+import TaskDetailScreen from '../screens/TaskDetailScreen';
 import { colors } from '../theme';
 
 const Stack = createNativeStackNavigator();
@@ -29,10 +32,15 @@ type MainScreen =
   | 'employeeList'
   | 'createEmployee'
   | 'customerList'
-  | 'createCustomer';
+  | 'createCustomer'
+  | 'taskList'
+  | 'createTask'
+  | 'taskDetail';
 
 function MainFlow() {
+  const { user } = useAuth();
   const [screen, setScreen] = useState<MainScreen>('dashboard');
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   if (screen === 'employeeList') {
     return (
@@ -70,10 +78,40 @@ function MainFlow() {
     );
   }
 
+  if (screen === 'taskList') {
+    return (
+      <TaskListScreen
+        onBack={() => setScreen('dashboard')}
+        onAddTask={() => setScreen('createTask')}
+        onOpenTask={(taskId) => {
+          setSelectedTaskId(taskId);
+          setScreen('taskDetail');
+        }}
+        canCreateTask={user?.role !== 'EMPLOYEE'}
+      />
+    );
+  }
+
+  if (screen === 'createTask') {
+    return (
+      <CreateTaskScreen
+        onBack={() => setScreen('taskList')}
+        onSuccess={() => setScreen('taskList')}
+      />
+    );
+  }
+
+  if (screen === 'taskDetail' && selectedTaskId) {
+    return (
+      <TaskDetailScreen taskId={selectedTaskId} onBack={() => setScreen('taskList')} />
+    );
+  }
+
   return (
     <DashboardScreen
       onNavigateToEmployees={() => setScreen('employeeList')}
       onNavigateToCustomers={() => setScreen('customerList')}
+      onNavigateToTasks={() => setScreen('taskList')}
     />
   );
 }

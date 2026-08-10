@@ -7,11 +7,13 @@ import { colors, spacing, typography, radius } from '../theme';
 interface DashboardScreenProps {
   onNavigateToEmployees: () => void;
   onNavigateToCustomers: () => void;
+  onNavigateToTasks: () => void;
 }
 
 export default function DashboardScreen({
   onNavigateToEmployees,
   onNavigateToCustomers,
+  onNavigateToTasks,
 }: DashboardScreenProps) {
   const { user, logout } = useAuth();
 
@@ -29,6 +31,11 @@ export default function DashboardScreen({
         <TouchableOpacity style={styles.menuCard} onPress={onNavigateToCustomers}>
           <Text style={styles.menuCardTitle}>🏢 Customers</Text>
           <Text style={styles.menuCardSubtitle}>Manage your customers</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.menuCard} onPress={onNavigateToTasks}>
+          <Text style={styles.menuCardTitle}>📋 Tasks</Text>
+          <Text style={styles.menuCardSubtitle}>View and manage tasks</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
           <Text style={styles.logoutButtonText}>Logout</Text>

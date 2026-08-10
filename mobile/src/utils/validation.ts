@@ -37,3 +37,13 @@ export const createCustomerSchema = z.object({
 });
 
 export type CreateCustomerFormData = z.infer<typeof createCustomerSchema>;
+
+export const createTaskSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().optional(),
+  customerId: z.string().min(1, 'Please select a customer'),
+  assignedToId: z.string().optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+});
+
+export type CreateTaskFormData = z.infer<typeof createTaskSchema>;
