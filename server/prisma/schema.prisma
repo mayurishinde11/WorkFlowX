@@ -16,6 +16,23 @@ enum UserRole {
   EMPLOYEE
 }
 
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  PENDING
+  ASSIGNED
+  ACCEPTED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
 model Company {
   id        String   @id @default(uuid())
   name      String
@@ -27,6 +44,7 @@ model Company {
 
   users     User[]
   customers Customer[]
+  tasks     Task[]
 
   @@map("companies")
 }
@@ -45,6 +63,10 @@ model User {
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  assignedTasks     Task[]            @relation("AssignedTasks")
+  createdTasks      Task[]            @relation("CreatedTasks")
+  statusChanges     TaskStatusHistory[]
 
   @@index([companyId])
   @@map("users")
@@ -66,6 +88,62 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  tasks     Task[]
+
   @@index([companyId])
   @@map("customers")
+}
+model Task {
+  id          String       @id @default(uuid())
+  companyId   String
+  company     Company      @relation(fields: [companyId], references: [id])
+
+  title       String
+  description String?
+
+  customerId  String
+  customer    Customer     @relation(fields: [customerId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?       @relation("AssignedTasks", fields: [assignedToId], references: [id])
+
+  createdById String
+  createdBy   User         @relation("CreatedTasks", fields: [createdById], references: [id])
+
+  priority    TaskPriority @default(MEDIUM)
+  status      TaskStatus   @default(PENDING)
+
+  dueDate           DateTime?
+  estimatedDuration Int?
+  actualDuration    Int?
+
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  statusHistory TaskStatusHistory[]
+
+  @@index([companyId])
+  @@index([assignedToId])
+  @@index([customerId])
+  @@index([status])
+  @@map("tasks")
+}
+
+model TaskStatusHistory {
+  id        String     @id @default(uuid())
+  taskId    String
+  task      Task       @relation(fields: [taskId], references: [id])
+
+  status    TaskStatus
+  changedById String
+  changedBy   User     @relation(fields: [changedById], references: [id])
+
+  notes     String?
+  createdAt DateTime   @default(now())
+
+  @@index([taskId])
+  @@map("task_status_history")
 }
