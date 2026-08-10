@@ -1,7 +1,12 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import prisma from '../lib/prisma';
-import { createTaskSchema, updateTaskSchema } from '../validators/task.validator';
+import {
+  createTaskSchema,
+  updateTaskSchema,
+  assignTaskSchema,
+  updateTaskStatusSchema,
+} from '../validators/task.validator';
 
 const taskInclude = {
   customer: { select: { id: true, name: true, address: true, phone: true } },
@@ -200,6 +205,160 @@ export async function updateTask(req: AuthRequest, res: Response) {
     });
   } catch (error) {
     console.error('Update task error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong',
+    });
+  }
+}
+
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ['ASSIGNED', 'CANCELLED'],
+  ASSIGNED: ['ACCEPTED', 'CANCELLED'],
+  ACCEPTED: ['IN_PROGRESS', 'CANCELLED'],
+  IN_PROGRESS: ['ON_HOLD', 'COMPLETED', 'CANCELLED'],
+  ON_HOLD: ['IN_PROGRESS', 'CANCELLED'],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
+export async function assignTask(req: AuthRequest, res: Response) {
+  try {
+    const companyId = req.user!.companyId;
+    const userId = req.user!.userId;
+    const id = req.params.id as string;
+
+    const parsed = assignTaskSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const { assignedToId } = parsed.data;
+
+    const task = await prisma.task.findFirst({ where: { id, companyId } });
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: 'Task not found',
+      });
+    }
+
+    const employee = await prisma.user.findFirst({ where: { id: assignedToId, companyId } });
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee not found',
+      });
+    }
+
+    const updatedTask = await prisma.task.update({
+      where: { id },
+      data: { assignedToId, status: 'ASSIGNED' },
+      include: taskInclude,
+    });
+
+    await prisma.taskStatusHistory.create({
+      data: {
+        taskId: id,
+        status: 'ASSIGNED',
+        changedById: userId,
+        notes: `Assigned to ${employee.firstName} ${employee.lastName}`,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Task assigned successfully',
+      data: { task: updatedTask },
+    });
+  } catch (error) {
+    console.error('Assign task error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong',
+    });
+  }
+}
+
+export async function updateTaskStatus(req: AuthRequest, res: Response) {
+  try {
+    const companyId = req.user!.companyId;
+    const role = req.user!.role;
+    const userId = req.user!.userId;
+    const id = req.params.id as string;
+
+    const parsed = updateTaskStatusSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const { status: newStatus, notes } = parsed.data;
+
+    const task = await prisma.task.findFirst({
+      where: {
+        id,
+        companyId,
+        ...(role === 'EMPLOYEE' ? { assignedToId: userId } : {}),
+      },
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: 'Task not found',
+      });
+    }
+
+    const allowedNextStatuses = VALID_TRANSITIONS[task.status] || [];
+    if (!allowedNextStatuses.includes(newStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot change status from ${task.status} to ${newStatus}`,
+      });
+    }
+
+    const updateData: any = { status: newStatus };
+    if (newStatus === 'IN_PROGRESS' && !task.startedAt) {
+      updateData.startedAt = new Date();
+    }
+    if (newStatus === 'COMPLETED') {
+      updateData.completedAt = new Date();
+      if (task.startedAt) {
+        const durationMs = new Date().getTime() - new Date(task.startedAt).getTime();
+        updateData.actualDuration = Math.round(durationMs / 60000);
+      }
+    }
+
+    const updatedTask = await prisma.task.update({
+      where: { id },
+      data: updateData,
+      include: taskInclude,
+    });
+
+    await prisma.taskStatusHistory.create({
+      data: {
+        taskId: id,
+        status: newStatus,
+        changedById: userId,
+        notes,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Task status updated successfully',
+      data: { task: updatedTask },
+    });
+  } catch (error) {
+    console.error('Update task status error:', error);
     return res.status(500).json({
       success: false,
       message: 'Something went wrong',
