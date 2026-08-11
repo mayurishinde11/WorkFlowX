@@ -17,4 +17,6 @@ export interface CreateCustomerPayload {
   email?: string;
   address: string;
   notes?: string;
+  latitude?: number;
+  longitude?: number;
 }

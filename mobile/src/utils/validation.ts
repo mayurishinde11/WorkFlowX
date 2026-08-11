@@ -34,6 +34,8 @@ export const createCustomerSchema = z.object({
   email: z.string().email('Enter a valid email').optional().or(z.literal('')),
   address: z.string().min(1, 'Address is required'),
   notes: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 export type CreateCustomerFormData = z.infer<typeof createCustomerSchema>;

@@ -17,6 +17,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createCustomerSchema, CreateCustomerFormData } from '../utils/validation';
 import { createCustomerRequest } from '../api/customerApi';
+import { useLocation } from '../hooks/useLocation';
 import { colors, spacing, typography, radius } from '../theme';
 
 interface CreateCustomerScreenProps {
@@ -27,14 +28,27 @@ interface CreateCustomerScreenProps {
 export default function CreateCustomerScreen({ onBack, onSuccess }: CreateCustomerScreenProps) {
   const queryClient = useQueryClient();
 
+  const { getCurrentLocation, isLoading: isLocating } = useLocation();
+  const [hasLocation, setHasLocation] = React.useState(false);
+
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<CreateCustomerFormData>({
     resolver: zodResolver(createCustomerSchema),
     defaultValues: { name: '', phone: '', email: '', address: '', notes: '' },
   });
+
+  async function handleUseLocation() {
+    const coords = await getCurrentLocation();
+    if (coords) {
+      setValue('latitude', coords.latitude);
+      setValue('longitude', coords.longitude);
+      setHasLocation(true);
+    }
+  }
 
   const mutation = useMutation({
     mutationFn: createCustomerRequest,
@@ -103,6 +117,20 @@ export default function CreateCustomerScreen({ onBack, onSuccess }: CreateCustom
             )}
           />
           {errors.address && <Text style={styles.errorText}>{errors.address.message}</Text>}
+
+          <TouchableOpacity
+            style={styles.locationButton}
+            onPress={handleUseLocation}
+            disabled={isLocating}
+          >
+            <Text style={styles.locationButtonText}>
+              {isLocating
+                ? 'Getting location...'
+                : hasLocation
+                ? '✅ Location captured'
+                : '📍 Use My Current Location'}
+            </Text>
+          </TouchableOpacity>
 
           <Text style={styles.label}>Phone (optional)</Text>
           <Controller
@@ -210,8 +238,16 @@ const styles = StyleSheet.create({
   textArea: {
     textAlignVertical: 'top',
     minHeight: 70,
+  },errorText: { ...typography.caption, color: colors.danger, marginTop: spacing.xs },
+  locationButton: {
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm + 4,
+    alignItems: 'center',
+    marginTop: spacing.sm,
   },
-  errorText: { ...typography.caption, color: colors.danger, marginTop: spacing.xs },
+    locationButtonText: { ...typography.bodyBold, color: colors.primary },
   button: {
     backgroundColor: colors.primary,
     borderRadius: radius.md,
