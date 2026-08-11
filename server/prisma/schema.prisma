@@ -68,6 +68,7 @@ model User {
   createdTasks      Task[]            @relation("CreatedTasks")
   statusChanges     TaskStatusHistory[]
   attendanceRecords Attendance[]
+  locationHistory   LocationTracking[]
 
   @@index([companyId])
   @@map("users")
@@ -125,6 +126,7 @@ model Task {
   updatedAt   DateTime     @updatedAt
 
   statusHistory TaskStatusHistory[]
+  locationHistory LocationTracking[]
 
   @@index([companyId])
   @@index([assignedToId])
@@ -170,4 +172,22 @@ model Attendance {
   @@unique([userId, date])
   @@index([userId])
   @@map("attendance")
+}
+
+model LocationTracking {
+  id        String   @id @default(uuid())
+  employeeId String
+  employee   User    @relation(fields: [employeeId], references: [id])
+
+  taskId    String?
+  task      Task?    @relation(fields: [taskId], references: [id])
+
+  latitude  Float
+  longitude Float
+
+  createdAt DateTime @default(now())
+
+  @@index([employeeId])
+  @@index([taskId])
+  @@map("location_tracking")
 }

@@ -13,6 +13,7 @@ import CreateCustomerScreen from '../screens/CreateCustomerScreen';
 import TaskListScreen from '../screens/TaskListScreen';
 import CreateTaskScreen from '../screens/CreateTaskScreen';
 import TaskDetailScreen from '../screens/TaskDetailScreen';
+import AttendanceScreen from '../screens/AttendanceScreen';
 import { colors } from '../theme';
 
 const Stack = createNativeStackNavigator();
@@ -35,7 +36,8 @@ type MainScreen =
   | 'createCustomer'
   | 'taskList'
   | 'createTask'
-  | 'taskDetail';
+  | 'taskDetail'
+  | 'attendance';
 
 function MainFlow() {
   const { user } = useAuth();
@@ -107,11 +109,16 @@ function MainFlow() {
     );
   }
 
+  if (screen === 'attendance') {
+    return <AttendanceScreen onBack={() => setScreen('dashboard')} />;
+  }
+
   return (
     <DashboardScreen
       onNavigateToEmployees={() => setScreen('employeeList')}
       onNavigateToCustomers={() => setScreen('customerList')}
       onNavigateToTasks={() => setScreen('taskList')}
+      onNavigateToAttendance={() => setScreen('attendance')}
     />
   );
 }

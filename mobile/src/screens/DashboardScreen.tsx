@@ -8,12 +8,14 @@ interface DashboardScreenProps {
   onNavigateToEmployees: () => void;
   onNavigateToCustomers: () => void;
   onNavigateToTasks: () => void;
+  onNavigateToAttendance: () => void;
 }
 
 export default function DashboardScreen({
   onNavigateToEmployees,
   onNavigateToCustomers,
   onNavigateToTasks,
+  onNavigateToAttendance,
 }: DashboardScreenProps) {
   const { user, logout } = useAuth();
 
@@ -33,9 +35,14 @@ export default function DashboardScreen({
           <Text style={styles.menuCardSubtitle}>Manage your customers</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuCard} onPress={onNavigateToTasks}>
+         <TouchableOpacity style={styles.menuCard} onPress={onNavigateToTasks}>
           <Text style={styles.menuCardTitle}>📋 Tasks</Text>
           <Text style={styles.menuCardSubtitle}>View and manage tasks</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.menuCard} onPress={onNavigateToAttendance}>
+          <Text style={styles.menuCardTitle}>🕐 Attendance</Text>
+          <Text style={styles.menuCardSubtitle}>Check in and check out</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
           <Text style={styles.logoutButtonText}>Logout</Text>
