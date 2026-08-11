@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { checkInRequest, checkOutRequest, getMyAttendanceRequest } from '../api/attendanceApi';
+import { useLocation } from '../hooks/useLocation';
 import { AttendanceRecord } from '../types/attendance.types';
 import { colors, spacing, typography, radius } from '../theme';
 
@@ -24,6 +25,7 @@ function formatDuration(minutes: number | null): string {
 
 export default function AttendanceScreen({ onBack }: AttendanceScreenProps) {
   const queryClient = useQueryClient();
+  const { getCurrentLocation } = useLocation();
 
   const { data, isLoading } = useQuery({
     queryKey: ['attendance'],
@@ -35,7 +37,10 @@ export default function AttendanceScreen({ onBack }: AttendanceScreenProps) {
   const todayRecord = records.find((r) => r.date.startsWith(today));
 
   const checkInMutation = useMutation({
-    mutationFn: () => checkInRequest({}),
+    mutationFn: async () => {
+      const coords = await getCurrentLocation();
+      return checkInRequest(coords || {});
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance'] });
       Alert.alert('Checked In', 'Have a productive day!');
@@ -46,7 +51,10 @@ export default function AttendanceScreen({ onBack }: AttendanceScreenProps) {
   });
 
   const checkOutMutation = useMutation({
-    mutationFn: () => checkOutRequest({}),
+    mutationFn: async () => {
+      const coords = await getCurrentLocation();
+      return checkOutRequest(coords || {});
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance'] });
       Alert.alert('Checked Out', 'See you tomorrow!');
