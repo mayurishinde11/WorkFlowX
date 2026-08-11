@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTaskByIdRequest, updateTaskStatusRequest } from '../api/taskApi';
-import MapView, { Marker, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
+import LocationMap from '../components/LocationMap';
 import { useAuth } from '../store/AuthContext';
 import { TaskStatus } from '../types/task.types';
 import { colors, spacing, typography, radius } from '../theme';
@@ -134,32 +134,13 @@ export default function TaskDetailScreen({ taskId, onBack }: TaskDetailScreenPro
 
         {task.customer.latitude != null && task.customer.longitude != null && (
           <View style={styles.mapContainer}>
-            <MapView
-              style={styles.map}
-              provider={PROVIDER_DEFAULT}
-              initialRegion={{
-                latitude: task.customer.latitude,
-                longitude: task.customer.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-            >
-              <UrlTile
-                urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                maximumZ={19}
-              />
-              <Marker
-                coordinate={{
-                  latitude: task.customer.latitude,
-                  longitude: task.customer.longitude,
-                }}
-                title={task.customer.name}
-                description={task.customer.address}
-              />
-            </MapView>
+            <LocationMap
+              latitude={task.customer.latitude}
+              longitude={task.customer.longitude}
+              title={task.customer.name}
+            />
           </View>
         )}
-
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Assigned To</Text>
           <Text style={styles.sectionValue}>
