@@ -9,7 +9,9 @@
     "ios": {
       "supportsTablet": true,
       "config": {
-        "googleMapsApiKey": ""
+        "googleMaps": {
+          "apiKey": ""
+        }
       }
     },
     "android": {

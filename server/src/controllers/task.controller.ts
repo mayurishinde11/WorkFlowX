@@ -9,7 +9,7 @@ import {
 } from '../validators/task.validator';
 
 const taskInclude = {
-  customer: { select: { id: true, name: true, address: true, phone: true } },
+  customer: { select: { id: true, name: true, address: true, phone: true, latitude: true, longitude: true } },
   assignedTo: { select: { id: true, firstName: true, lastName: true } },
   createdBy: { select: { id: true, firstName: true, lastName: true } },
 };

@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTaskByIdRequest, updateTaskStatusRequest } from '../api/taskApi';
+import MapView, { Marker, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useAuth } from '../store/AuthContext';
 import { TaskStatus } from '../types/task.types';
 import { colors, spacing, typography, radius } from '../theme';
@@ -106,7 +107,7 @@ export default function TaskDetailScreen({ taskId, onBack }: TaskDetailScreenPro
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack}>
-          <Text style={styles.backButton}>← Back</Text>
+          <Text style={styles.backButton}>Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
           Task Details
@@ -130,6 +131,34 @@ export default function TaskDetailScreen({ taskId, onBack }: TaskDetailScreenPro
             <Text style={styles.sectionSubvalue}>📞 {task.customer.phone}</Text>
           )}
         </View>
+
+        {task.customer.latitude != null && task.customer.longitude != null && (
+          <View style={styles.mapContainer}>
+            <MapView
+              style={styles.map}
+              provider={PROVIDER_DEFAULT}
+              initialRegion={{
+                latitude: task.customer.latitude,
+                longitude: task.customer.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+            >
+              <UrlTile
+                urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                maximumZ={19}
+              />
+              <Marker
+                coordinate={{
+                  latitude: task.customer.latitude,
+                  longitude: task.customer.longitude,
+                }}
+                title={task.customer.name}
+                description={task.customer.address}
+              />
+            </MapView>
+          </View>
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Assigned To</Text>
@@ -231,6 +260,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+
+  mapContainer: {
+    borderRadius: radius.md,
+    overflow: 'hidden',
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  map: {
+    width: '100%',
+    height: 200,
+  },
+
   sectionLabel: {
     ...typography.small,
     color: colors.textMuted,
