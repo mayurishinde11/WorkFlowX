@@ -67,6 +67,7 @@ model User {
   assignedTasks     Task[]            @relation("AssignedTasks")
   createdTasks      Task[]            @relation("CreatedTasks")
   statusChanges     TaskStatusHistory[]
+  attendanceRecords Attendance[]
 
   @@index([companyId])
   @@map("users")
@@ -146,4 +147,27 @@ model TaskStatusHistory {
 
   @@index([taskId])
   @@map("task_status_history")
+}
+
+model Attendance {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+
+  date        DateTime  @db.Date
+  checkIn     DateTime
+  checkOut    DateTime?
+
+  checkInLat  Float?
+  checkInLng  Float?
+  checkOutLat Float?
+  checkOutLng Float?
+
+  workingMinutes Int?
+
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@map("attendance")
 }
