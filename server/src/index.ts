@@ -8,6 +8,7 @@ import employeeRoutes from './routes/employee.routes';
 import customerRoutes from './routes/customer.routes';
 import taskRoutes from './routes/task.routes';
 import attendanceRoutes from './routes/attendance.routes';
+import locationRoutes from './routes/location.routes';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -28,6 +29,7 @@ app.use('/api/employees', employeeRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/location', locationRoutes);
 app.listen(PORT, () => {
   console.log('WorkFlowX server running on http://localhost:' + PORT);
 });
