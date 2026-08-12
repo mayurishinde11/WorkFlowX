@@ -69,6 +69,7 @@ model User {
   statusChanges     TaskStatusHistory[]
   attendanceRecords Attendance[]
   locationHistory   LocationTracking[]
+  uploadedAttachments TaskAttachment[]
 
   @@index([companyId])
   @@map("users")
@@ -127,6 +128,7 @@ model Task {
 
   statusHistory TaskStatusHistory[]
   locationHistory LocationTracking[]
+  attachments   TaskAttachment[]
 
   @@index([companyId])
   @@index([assignedToId])
@@ -190,4 +192,29 @@ model LocationTracking {
   @@index([employeeId])
   @@index([taskId])
   @@map("location_tracking")
+}
+
+enum AttachmentType {
+  BEFORE
+  DURING
+  AFTER
+  OTHER
+}
+
+model TaskAttachment {
+  id         String         @id @default(uuid())
+  taskId     String
+  task       Task           @relation(fields: [taskId], references: [id])
+
+  fileUrl    String
+  fileName   String
+  type       AttachmentType @default(OTHER)
+
+  uploadedById String
+  uploadedBy   User         @relation(fields: [uploadedById], references: [id])
+
+  createdAt  DateTime       @default(now())
+
+  @@index([taskId])
+  @@map("task_attachments")
 }
