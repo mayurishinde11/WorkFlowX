@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { checkInRequest, checkOutRequest, getMyAttendanceRequest } from '../api/attendanceApi';
 import { useLocation } from '../hooks/useLocation';
+import { recordLocationRequest } from '../api/locationApi';
 import { AttendanceRecord } from '../types/attendance.types';
 import { colors, spacing, typography, radius } from '../theme';
 
@@ -39,6 +40,9 @@ export default function AttendanceScreen({ onBack }: AttendanceScreenProps) {
   const checkInMutation = useMutation({
     mutationFn: async () => {
       const coords = await getCurrentLocation();
+      if (coords) {
+        recordLocationRequest(coords.latitude, coords.longitude).catch(() => {});
+      }
       return checkInRequest(coords || {});
     },
     onSuccess: () => {
