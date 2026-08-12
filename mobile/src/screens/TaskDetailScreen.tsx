@@ -11,7 +11,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTaskByIdRequest, updateTaskStatusRequest } from '../api/taskApi';
+import { uploadAttachmentRequest, getTaskAttachmentsRequest } from '../api/attachmentApi';
 import LocationMap from '../components/LocationMap';
+import * as ImagePicker from 'expo-image-picker';
+import { Image, ScrollView as HScrollView } from 'react-native';
 import { useAuth } from '../store/AuthContext';
 import { TaskStatus } from '../types/task.types';
 import { colors, spacing, typography, radius } from '../theme';
@@ -47,6 +50,20 @@ export default function TaskDetailScreen({ taskId, onBack }: TaskDetailScreenPro
     queryFn: () => getTaskByIdRequest(taskId),
   });
 
+  const { data: attachmentsData, refetch: refetchAttachments } = useQuery({
+    queryKey: ['attachments', taskId],
+    queryFn: () => getTaskAttachmentsRequest(taskId),
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: (imageUri: string) => uploadAttachmentRequest(taskId, imageUri, 'DURING'),
+    onSuccess: () => {
+      refetchAttachments();
+    },
+    onError: () => {
+      Alert.alert('Error', 'Failed to upload photo');
+    },
+  });
   const statusMutation = useMutation({
     mutationFn: ({ status, notes }: { status: TaskStatus; notes?: string }) =>
       updateTaskStatusRequest(taskId, status, notes),
@@ -85,6 +102,32 @@ export default function TaskDetailScreen({ taskId, onBack }: TaskDetailScreenPro
   const isMyTask = task.assignedTo?.id === user?.id;
   const canUpdateStatus = user?.role !== 'EMPLOYEE' || isMyTask;
 
+  async function pickImage(useCamera: boolean) {
+    const permissionResult = useCamera
+      ? await ImagePicker.requestCameraPermissionsAsync()
+      : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert('Permission needed', 'Please allow access to continue');
+      return;
+    }
+
+    const result = useCamera
+      ? await ImagePicker.launchCameraAsync({ quality: 0.7 })
+      : await ImagePicker.launchImageLibraryAsync({ quality: 0.7 });
+
+    if (!result.canceled && result.assets[0]) {
+      uploadMutation.mutate(result.assets[0].uri);
+    }
+  }
+
+  function handleAddPhoto() {
+    Alert.alert('Add Photo', 'Choose an option', [
+      { text: 'Take Photo', onPress: () => pickImage(true) },
+      { text: 'Choose from Gallery', onPress: () => pickImage(false) },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  }
   function handleStatusChange(newStatus: TaskStatus) {
     statusMutation.mutate({ status: newStatus });
   }
@@ -155,6 +198,27 @@ export default function TaskDetailScreen({ taskId, onBack }: TaskDetailScreenPro
           <Text style={styles.sectionValue}>{task.priority}</Text>
         </View>
 
+        <View style={styles.section}>
+          <View style={styles.photosSectionHeader}>
+            <Text style={styles.sectionLabel}>Photos</Text>
+            <TouchableOpacity onPress={handleAddPhoto} disabled={uploadMutation.isPending}>
+              {uploadMutation.isPending ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Text style={styles.addPhotoText}>+ Add</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+          {attachmentsData?.data.attachments.length ? (
+            <HScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {attachmentsData.data.attachments.map((att) => (
+                <Image key={att.id} source={{ uri: att.fileUrl }} style={styles.photoThumb} />
+              ))}
+            </HScrollView>
+          ) : (
+            <Text style={styles.noPhotosText}>No photos yet</Text>
+          )}
+        </View>
         {task.statusHistory && task.statusHistory.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>History</Text>
@@ -269,6 +333,21 @@ const styles = StyleSheet.create({
   historyStatus: { ...typography.bodyBold, color: colors.textPrimary },
   historyMeta: { ...typography.small, color: colors.textMuted },
   historyNotes: { ...typography.caption, color: colors.textSecondary, marginTop: 2 },
+  photosSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  addPhotoText: { ...typography.bodyBold, color: colors.primary },
+  photoThumb: {
+    width: 90,
+    height: 90,
+    borderRadius: radius.md,
+    marginRight: spacing.sm,
+    backgroundColor: colors.border,
+  },
+  noPhotosText: { ...typography.caption, color: colors.textMuted, fontStyle: 'italic' },
   actionBar: {
     position: 'absolute',
     bottom: 0,
