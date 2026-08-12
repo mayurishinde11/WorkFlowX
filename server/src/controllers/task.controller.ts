@@ -7,6 +7,7 @@ import {
   assignTaskSchema,
   updateTaskStatusSchema,
 } from '../validators/task.validator';
+import { createNotification } from '../services/notification.service';
 
 const taskInclude = {
   customer: { select: { id: true, name: true, address: true, phone: true, latitude: true, longitude: true } },
@@ -73,6 +74,15 @@ export async function createTask(req: AuthRequest, res: Response) {
         notes: 'Task created',
       },
     });
+
+    if (assignedToId) {
+      await createNotification({
+        userId: assignedToId,
+        title: 'New Task Assigned',
+        message: `You've been assigned: ${title}`,
+        type: 'NEW_TASK',
+      });
+    }
 
     return res.status(201).json({
       success: true,
@@ -270,6 +280,13 @@ export async function assignTask(req: AuthRequest, res: Response) {
       },
     });
 
+    await createNotification({
+      userId: assignedToId,
+      title: 'Task Assigned',
+      message: `You've been assigned: ${task.title}`,
+      type: 'NEW_TASK',
+    });
+
     return res.status(200).json({
       success: true,
       message: 'Task assigned successfully',
@@ -351,6 +368,15 @@ export async function updateTaskStatus(req: AuthRequest, res: Response) {
         notes,
       },
     });
+
+    if (newStatus === 'COMPLETED') {
+      await createNotification({
+        userId: task.createdById,
+        title: 'Task Completed',
+        message: `${task.title} has been marked as completed`,
+        type: 'TASK_STATUS_CHANGED',
+      });
+    }
 
     return res.status(200).json({
       success: true,
