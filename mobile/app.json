@@ -4,7 +4,15 @@
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon.png","plugins": [
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "WorkFlowX uses your location to track work progress and show your position to your manager while on active tasks."
+        }
+      ]
+    ]
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
@@ -37,6 +45,13 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "WorkFlowX uses your location to track work progress and show your position to your manager while on active tasks."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "WorkFlowX needs access to your photos to attach proof-of-work images to tasks.",
+          "cameraPermission": "WorkFlowX needs access to your camera to take proof-of-work photos for tasks."
         }
       ]
     ]
