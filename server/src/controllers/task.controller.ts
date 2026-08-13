@@ -8,6 +8,7 @@ import {
   updateTaskStatusSchema,
 } from '../validators/task.validator';
 import { createNotification } from '../services/notification.service';
+import { createAuditLog } from '../services/auditLog.service';
 
 const taskInclude = {
   customer: { select: { id: true, name: true, address: true, phone: true, latitude: true, longitude: true } },
@@ -375,6 +376,17 @@ export async function updateTaskStatus(req: AuthRequest, res: Response) {
         title: 'Task Completed',
         message: `${task.title} has been marked as completed`,
         type: 'TASK_STATUS_CHANGED',
+      });
+    }
+
+    if (newStatus === 'CANCELLED') {
+      await createAuditLog({
+        companyId,
+        userId,
+        action: 'CANCEL',
+        entity: 'Task',
+        entityId: id,
+        metadata: { title: task.title, previousStatus: task.status, notes },
       });
     }
 

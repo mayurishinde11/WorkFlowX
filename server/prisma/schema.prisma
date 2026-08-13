@@ -244,3 +244,20 @@ model Notification {
   @@index([userId])
   @@map("notifications")
 }
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  companyId String
+
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
+  @@index([userId])
+  @@map("audit_logs")
+}

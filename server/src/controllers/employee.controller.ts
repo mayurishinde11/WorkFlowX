@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import prisma from '../lib/prisma';
 import { hashPassword } from '../utils/password';
 import { createEmployeeSchema, updateEmployeeSchema } from '../validators/employee.validator';
+import { createAuditLog } from '../services/auditLog.service';
 
 export async function createEmployee(req: AuthRequest, res: Response) {
   try {
@@ -17,6 +18,7 @@ export async function createEmployee(req: AuthRequest, res: Response) {
     }
 
     const companyId = req.user!.companyId;
+    const createdById = req.user!.userId;
     const { firstName, lastName, email, password, role } = parsed.data;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -40,6 +42,14 @@ export async function createEmployee(req: AuthRequest, res: Response) {
       },
     });
 
+    await createAuditLog({
+      companyId,
+      userId: createdById,
+      action: 'CREATE',
+      entity: 'Employee',
+      entityId: employee.id,
+      metadata: { firstName, lastName, email, role },
+    });
     return res.status(201).json({
       success: true,
       message: 'Employee created successfully',
