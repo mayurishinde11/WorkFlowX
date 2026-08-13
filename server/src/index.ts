@@ -11,6 +11,7 @@ import attendanceRoutes from './routes/attendance.routes';
 import locationRoutes from './routes/location.routes';
 import attachmentRoutes from './routes/attachment.routes';
 import notificationRoutes from './routes/notification.routes';
+import analyticsRoutes from './routes/analytics.routes';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -34,6 +35,7 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/attachments', attachmentRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.listen(PORT, () => {
   console.log('WorkFlowX server running on http://localhost:' + PORT);
 });
