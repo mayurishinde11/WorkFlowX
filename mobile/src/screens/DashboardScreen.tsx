@@ -14,7 +14,9 @@ interface DashboardScreenProps {
   onNavigateToTeamMap: () => void;
   onNavigateToNotifications: () => void;
   onNavigateToAnalytics: () => void;
+  onNavigateToAuditLog: () => void;
   isManagerOrAdmin: boolean;
+  isAdmin: boolean;
 }
 
 export default function DashboardScreen({
@@ -25,7 +27,9 @@ export default function DashboardScreen({
   onNavigateToTeamMap,
   onNavigateToNotifications,
   onNavigateToAnalytics,
+  onNavigateToAuditLog,
   isManagerOrAdmin,
+  isAdmin,
 }: DashboardScreenProps) {
   const { user, logout } = useAuth();
   const { data: notifData } = useQuery({
@@ -82,6 +86,13 @@ export default function DashboardScreen({
           <TouchableOpacity style={styles.menuCard} onPress={onNavigateToAnalytics}>
             <Text style={styles.menuCardTitle}>📊 Analytics</Text>
             <Text style={styles.menuCardSubtitle}>View performance stats</Text>
+          </TouchableOpacity>
+        )}
+
+        {isAdmin && (
+          <TouchableOpacity style={styles.menuCard} onPress={onNavigateToAuditLog}>
+            <Text style={styles.menuCardTitle}>📝 Audit Log</Text>
+            <Text style={styles.menuCardSubtitle}>Track important actions</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
