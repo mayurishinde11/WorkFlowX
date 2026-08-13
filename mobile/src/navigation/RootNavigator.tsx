@@ -16,6 +16,7 @@ import TaskDetailScreen from '../screens/TaskDetailScreen';
 import AttendanceScreen from '../screens/AttendanceScreen';
 import TeamMapScreen from '../screens/TeamMapScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
+import AnalyticsScreen from '../screens/AnalyticsScreen';
 import { colors } from '../theme';
 
 const Stack = createNativeStackNavigator();
@@ -41,7 +42,8 @@ type MainScreen =
   | 'taskDetail'
   | 'attendance'
   | 'teamMap'
-  | 'notifications';
+  | 'notifications'
+  | 'analytics';
 
 function MainFlow() {
   const { user } = useAuth();
@@ -125,6 +127,10 @@ function MainFlow() {
     return <NotificationsScreen onBack={() => setScreen('dashboard')} />;
   }
 
+  if (screen === 'analytics') {
+    return <AnalyticsScreen onBack={() => setScreen('dashboard')} />;
+  }
+
   return (
     <DashboardScreen
       onNavigateToEmployees={() => setScreen('employeeList')}
@@ -133,6 +139,7 @@ function MainFlow() {
       onNavigateToAttendance={() => setScreen('attendance')}
       onNavigateToTeamMap={() => setScreen('teamMap')}
       onNavigateToNotifications={() => setScreen('notifications')}
+      onNavigateToAnalytics={() => setScreen('analytics')}
       isManagerOrAdmin={user?.role !== 'EMPLOYEE'}
     />
   );

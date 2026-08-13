@@ -13,6 +13,7 @@ interface DashboardScreenProps {
   onNavigateToAttendance: () => void;
   onNavigateToTeamMap: () => void;
   onNavigateToNotifications: () => void;
+  onNavigateToAnalytics: () => void;
   isManagerOrAdmin: boolean;
 }
 
@@ -23,6 +24,7 @@ export default function DashboardScreen({
   onNavigateToAttendance,
   onNavigateToTeamMap,
   onNavigateToNotifications,
+  onNavigateToAnalytics,
   isManagerOrAdmin,
 }: DashboardScreenProps) {
   const { user, logout } = useAuth();
@@ -73,6 +75,13 @@ export default function DashboardScreen({
           <TouchableOpacity style={styles.menuCard} onPress={onNavigateToTeamMap}>
             <Text style={styles.menuCardTitle}>🗺️ Team Map</Text>
             <Text style={styles.menuCardSubtitle}>See where your team is</Text>
+          </TouchableOpacity>
+        )}
+
+        {isManagerOrAdmin && (
+          <TouchableOpacity style={styles.menuCard} onPress={onNavigateToAnalytics}>
+            <Text style={styles.menuCardTitle}>📊 Analytics</Text>
+            <Text style={styles.menuCardSubtitle}>View performance stats</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
