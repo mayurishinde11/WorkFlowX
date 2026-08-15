@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../store/AuthContext';
@@ -40,7 +40,7 @@ export default function DashboardScreen({
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         <View style={styles.topRow}>
           <View>
             <Text style={styles.greeting}>Welcome, {user?.firstName} 👋</Text>
@@ -98,14 +98,14 @@ export default function DashboardScreen({
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { flex: 1, padding: spacing.lg },
+  content: { flex: 1 },
+  contentContainer: { padding: spacing.lg, paddingBottom: spacing.xl },
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     alignItems: 'center',
-    marginTop: 'auto',
+    marginTop: spacing.lg,
   },
   logoutButtonText: { ...typography.bodyBold, color: colors.textInverse },
 });
