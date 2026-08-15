@@ -27,7 +27,7 @@ export async function uploadAttachment(req: AuthRequest, res: Response) {
 
     const uploadResult = await new Promise<{ secure_url: string }>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: `workflowx/tasks/${taskId}` },
+        { folder: `workflowx/tasks/${taskId}`, timeout: 60000 },
         (error, result) => {
           if (error || !result) return reject(error);
           resolve(result as { secure_url: string });
