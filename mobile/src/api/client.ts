@@ -6,7 +6,7 @@ import {
   clearTokens,
 } from '../services/tokenStorage';
 
-const BASE_URL = 'http://10.220.243.117:5000/api';
+const BASE_URL = 'http://172.25.189.117:5000/api';
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
