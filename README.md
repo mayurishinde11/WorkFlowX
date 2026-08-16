@@ -188,11 +188,16 @@ Scan the QR code with Expo Go on your device. Update the API base URL in `mobile
 
 ---
 
+## Live Deployment
+
+Backend API: https://workflowx-api-reh0.onrender.com/api/health
+Database: PostgreSQL hosted on Neon
+Note: Free-tier hosting spins down after inactivity; first request may take a few seconds to wake up.
+
 ## Planned Enhancements
 
 The following are documented as future work:
-- Automated test suite (Jest + Supertest)
-- Production deployment (backend hosting, managed PostgreSQL, EAS mobile builds)
+- EAS mobile app builds for app store distribution
 - Real-time updates via Socket.IO (live task/comment updates)
 - Push notifications (device-level alerts via Expo push service)
 - Issue reporting workflow for field employees
