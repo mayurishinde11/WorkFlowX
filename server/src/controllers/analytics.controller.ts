@@ -73,8 +73,8 @@ export async function getDashboardStats(req: AuthRequest, res: Response) {
         completedToday,
         overdueTasks,
         completionRate,
-        tasksByStatus: tasksByStatus.map((t) => ({ status: t.status, count: t._count })),
-        tasksByPriority: tasksByPriority.map((t) => ({ priority: t.priority, count: t._count })),
+        tasksByStatus: tasksByStatus.map((t: any) => ({ status: t.status, count: t._count })),
+        tasksByPriority: tasksByPriority.map((t: any) => ({ priority: t.priority, count: t._count })),
       },
     });
   } catch (error) {

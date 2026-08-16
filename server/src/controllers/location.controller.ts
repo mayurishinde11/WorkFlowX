@@ -49,7 +49,7 @@ export async function getActiveEmployeeLocations(req: AuthRequest, res: Response
       select: { id: true, firstName: true, lastName: true },
     });
 
-    const employeeIds = employees.map((e) => e.id);
+    const employeeIds = employees.map((e: any) => e.id);
 
     const latestLocations = await prisma.locationTracking.findMany({
       where: { employeeId: { in: employeeIds } },
