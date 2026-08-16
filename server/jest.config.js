@@ -5,4 +5,5 @@ module.exports = {
   verbose: true,
   forceExit: true,
   clearMocks: true,
+  setupFiles: ['<rootDir>/tests/setup.ts'],
 };
