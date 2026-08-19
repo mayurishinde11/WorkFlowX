@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WorkFlowX — Field Service &amp; Task Management Platform</title>
+<meta name="description" content="A full-stack, multi-tenant field service management platform built with React Native, Express, and PostgreSQL." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#10141b;
+    --bg-alt:#161c25;
+    --surface:#1b2230;
+    --paper:#f2efe6;
+    --ink:#eef0f4;
+    --ink-dim:#9aa3b5;
+    --ink-faint:#6b7385;
+    --accent:#ff7a1a;
+    --accent-ink:#1a0e04;
+    --status-green:#35c98a;
+    --line: rgba(255,255,255,0.09);
+    --line-strong: rgba(255,255,255,0.16);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 28px;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .display{font-family:'Archivo',sans-serif;}
+
+  .grain{ position:relative; }
+  .grain::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, black 40%, transparent 90%);
+    opacity:0.5;
+    pointer-events:none;
+  }
+
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(16,20,27,0.86);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 0;
+  }
+  .brand{display:flex; align-items:center; gap:10px; text-decoration:none;}
+  .brand-mark{
+    width:30px; height:30px; border-radius:7px;
+    background:var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .brand-mark svg{width:16px;height:16px;}
+  .brand-word{ font-weight:900; font-size:17px; letter-spacing:0.01em; color:var(--ink); font-family:'Archivo',sans-serif;}
+  .brand-word span{color:var(--accent);}
+  .nav-links{display:flex; align-items:center; gap:28px;}
+  .nav-links a{ font-size:14px; color:var(--ink-dim); text-decoration:none; font-weight:500; transition:color .15s ease; }
+  .nav-links a:hover{color:var(--ink);}
+  .nav-cta{display:flex; gap:10px;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:9px 16px; border-radius:8px;
+    font-size:13.5px; font-weight:600; text-decoration:none;
+    border:1px solid var(--line-strong);
+    transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .btn-ghost{color:var(--ink); background:transparent;}
+  .btn-ghost:hover{border-color:var(--ink-dim); background:var(--surface);}
+  .btn-solid{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+  .btn-solid:hover{background:#ff8a35;}
+  .btn svg{width:15px;height:15px;}
+  @media (max-width:760px){ .nav-links{display:none;} }
+
+  .hero{ padding:88px 0 76px; position:relative; }
+  .hero-grid{ display:grid; grid-template-columns: 1.05fr 0.95fr; gap:56px; align-items:center; }
+  @media (max-width:900px){ .hero-grid{grid-template-columns:1fr; gap:52px;} }
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500;
+    color:var(--accent); letter-spacing:0.06em;
+    padding:5px 10px; border:1px dashed rgba(255,122,26,0.45); border-radius:6px;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{content:"●"; font-size:8px;}
+
+  h1.hero-head{
+    font-family:'Archivo',sans-serif; font-weight:900;
+    font-size:clamp(38px, 5.4vw, 60px);
+    line-height:1.02; letter-spacing:-0.015em;
+    margin:0 0 22px;
+  }
+  h1.hero-head .accent-line{color:var(--accent);}
+
+  .hero-sub{ font-size:17px; line-height:1.65; color:var(--ink-dim); max-width:480px; margin:0 0 32px; }
+  .hero-actions{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:38px;}
+  .hero-actions .btn{padding:12px 20px; font-size:14.5px;}
+
+  .hero-stack-row{ display:flex; flex-wrap:wrap; gap:8px 10px; align-items:center; }
+  .stack-chip{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-faint);
+    padding:4px 9px; border:1px solid var(--line); border-radius:5px;
+  }
+
+  .ticket-stage{ position:relative; }
+  .ticket{
+    background:var(--paper);
+    color:#1a1d16;
+    border-radius:14px;
+    padding:26px 26px 24px;
+    box-shadow: 0 30px 70px -20px rgba(0,0,0,0.65), 0 0 0 1px rgba(0,0,0,0.04);
+    transform: rotate(-2.2deg);
+    position:relative;
+    max-width:420px;
+    margin:0 auto;
+  }
+  .ticket::before, .ticket::after{
+    content:""; position:absolute; width:26px; height:26px; background:var(--bg);
+    border-radius:50%; top:50%; margin-top:-13px;
+  }
+  .ticket::before{ left:-13px; }
+  .ticket::after{ right:-13px; }
+  .ticket-perf{
+    position:absolute; left:14px; right:14px; top:50%; margin-top:-1px;
+    border-top:2px dashed rgba(0,0,0,0.16);
+  }
+  .ticket-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding-bottom:18px; margin-bottom:20px;
+    border-bottom:2px dashed rgba(0,0,0,0.14);
+  }
+  .ticket-id{font-family:'IBM Plex Mono',monospace; font-size:11px; color:#787158; font-weight:600; letter-spacing:0.04em;}
+  .ticket-title{font-family:'Archivo',sans-serif; font-weight:800; font-size:19px; margin-top:4px;}
+  .ticket-stamp{
+    font-family:'Archivo',sans-serif; font-weight:900; font-size:12.5px;
+    color:var(--status-green); border:2.5px solid var(--status-green);
+    border-radius:6px; padding:4px 8px; transform: rotate(7deg);
+    letter-spacing:0.03em;
+  }
+  .ticket-field{margin-bottom:14px;}
+  .ticket-label{font-family:'IBM Plex Mono',monospace; font-size:10px; color:#8a8368; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px;}
+  .ticket-value{font-size:14.5px; font-weight:600; color:#232014;}
+  .ticket-value.small{font-size:13px; font-weight:500; color:#4a4636;}
+
+  .lifecycle{display:flex; flex-wrap:wrap; gap:6px; margin-top:18px;}
+  .life-step{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600;
+    padding:5px 8px; border-radius:5px; color:#4a4636; background:rgba(0,0,0,0.05);
+  }
+  .life-step.done{background:rgba(53,201,138,0.16); color:#1f7a56;}
+  .life-step.active{background:var(--accent); color:var(--accent-ink);}
+  .life-arrow{color:#b3ac93; font-size:10.5px; align-self:center;}
+
+  .ticket-float{
+    position:absolute; background:var(--surface); border:1px solid var(--line-strong);
+    border-radius:10px; padding:10px 14px; box-shadow:0 20px 40px -12px rgba(0,0,0,0.5);
+  }
+  .float-1{ top:-18px; right:10px; transform:rotate(4deg); }
+  .float-1 .fl-label{font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--ink-faint);}
+  .float-1 .fl-value{font-family:'Archivo',sans-serif; font-weight:900; font-size:20px; color:var(--ink); line-height:1;}
+  @media (max-width:520px){ .ticket{transform:rotate(-1.2deg); max-width:100%;} .float-1{right:0;} }
+
+  .stats-bar{ border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--bg-alt); }
+  .stats-row{ display:grid; grid-template-columns:repeat(4,1fr); padding:30px 0; }
+  .stat{ text-align:center; border-left:1px solid var(--line); padding:0 12px; }
+  .stat:first-child{border-left:none;}
+  .stat-num{font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(26px,3.4vw,34px); color:var(--accent);}
+  .stat-label{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-faint); margin-top:4px; letter-spacing:0.03em;}
+  @media (max-width:700px){ .stats-row{grid-template-columns:repeat(2,1fr); row-gap:24px;} .stat:nth-child(3){border-left:none;} }
+
+  section{padding:88px 0;}
+  .sec-head{ max-width:620px; margin-bottom:52px; }
+  .sec-eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--accent);
+    letter-spacing:0.08em; text-transform:uppercase; margin-bottom:12px; font-weight:600;
+  }
+  .sec-title{
+    font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(26px,3.6vw,36px);
+    letter-spacing:-0.01em; margin:0 0 14px; line-height:1.1;
+  }
+  .sec-desc{ color:var(--ink-dim); font-size:16px; line-height:1.65; }
+
+  .feat-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  }
+  @media (max-width:900px){ .feat-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:560px){ .feat-grid{grid-template-columns:1fr;} }
+  .feat-card{ background:var(--surface); padding:26px 22px; transition:background .15s ease; }
+  .feat-card:hover{background:#212a3a;}
+  .feat-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600;
+    color:var(--accent); letter-spacing:0.05em; margin-bottom:14px; display:block;
+  }
+  .feat-name{ font-family:'Archivo',sans-serif; font-weight:700; font-size:16.5px; margin-bottom:8px; }
+  .feat-desc{ font-size:13.5px; color:var(--ink-dim); line-height:1.55; }
+
+  .cycle-strip{
+    display:flex; align-items:stretch; gap:0; overflow-x:auto;
+    border:1px solid var(--line); border-radius:14px; background:var(--surface);
+  }
+  .cycle-node{ flex:1 1 0; min-width:130px; padding:22px 18px; position:relative; border-right:1px solid var(--line); }
+  .cycle-node:last-child{border-right:none;}
+  .cycle-dot{width:9px; height:9px; border-radius:50%; background:var(--ink-faint); margin-bottom:14px;}
+  .cycle-node.on .cycle-dot{background:var(--accent);}
+  .cycle-name{font-family:'Archivo',sans-serif; font-weight:800; font-size:14px; margin-bottom:6px;}
+  .cycle-desc{font-size:12px; color:var(--ink-faint); line-height:1.5;}
+
+  .manifest{
+    display:grid; grid-template-columns:1fr 1fr; gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  }
+  @media (max-width:760px){ .manifest{grid-template-columns:1fr;} }
+  .manifest-col{ background:var(--surface); padding:30px 30px 26px; }
+  .manifest-head{
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-faint);
+    letter-spacing:0.06em; text-transform:uppercase;
+    padding-bottom:14px; margin-bottom:16px; border-bottom:1px solid var(--line);
+  }
+  .manifest-list{ list-style:none; margin:0; padding:0; }
+  .manifest-list li{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:9px 0; border-bottom:1px dashed var(--line);
+    font-size:14px;
+  }
+  .manifest-list li:last-child{border-bottom:none;}
+  .m-name{font-weight:600; color:var(--ink);}
+  .m-role{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-faint);}
+
+  .cta-section{ text-align:center; padding:96px 0 110px; }
+  .cta-title{ font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(28px,4vw,42px); letter-spacing:-0.015em; margin:0 0 16px; }
+  .cta-desc{ color:var(--ink-dim); font-size:16px; max-width:480px; margin:0 auto 34px; line-height:1.6;}
+  .cta-actions{display:flex; gap:14px; justify-content:center; flex-wrap:wrap;}
+  .cta-actions .btn{padding:14px 26px; font-size:15px;}
+
+  footer{ border-top:1px solid var(--line); padding:32px 0; }
+  .foot-row{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; }
+  .foot-left{font-size:13px; color:var(--ink-faint);}
+  .foot-links{display:flex; gap:20px;}
+  .foot-links a{font-size:13px; color:var(--ink-dim); text-decoration:none;}
+  .foot-links a:hover{color:var(--ink);}
+
+  .reveal{transition:opacity .6s ease, transform .6s ease;}
+  .js-ready .reveal{opacity:0; transform:translateY(16px);}
+  .js-ready .reveal.in{opacity:1; transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="#top">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 L20 7 V17 L12 22 L4 17 V7 Z" stroke="#1a0e04" stroke-width="1.8" fill="none"/><path d="M8.5 12.5l2.3 2.3L16 9.5" stroke="#1a0e04" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="brand-word">WORK<span>FLOW</span>X</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#lifecycle">Task Lifecycle</a>
+        <a href="#stack">Stack</a>
+      </div>
+      <div class="nav-cta">
+        <a class="btn btn-ghost" href="https://github.com/mayurishinde11/WorkFlowX" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.79-.25.79-.55 0-.27-.01-1.16-.02-2.11-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.69-1.28-1.69-1.04-.72.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.41-5.26 5.69.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.66.8.55A10.52 10.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+          Source
+        </a>
+        <a class="btn btn-solid" href="https://workflowx-api-reh0.onrender.com/api/health" target="_blank" rel="noopener">
+          Live API
+          <svg viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H8M17 7V16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero grain">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">SOLO-BUILT · DEPLOYED TO PRODUCTION</div>
+          <h1 class="hero-head">Every job,<br>logged, tracked,<br><span class="accent-line">and closed out.</span></h1>
+          <p class="hero-sub">WorkFlowX is a full-stack task and workforce platform for field service teams — the kind of app that replaces a WhatsApp group and an Excel sheet with a real system of record.</p>
+          <div class="hero-actions">
+            <a class="btn btn-solid" href="https://github.com/mayurishinde11/WorkFlowX" target="_blank" rel="noopener">View Source on GitHub</a>
+            <a class="btn btn-ghost" href="https://workflowx-api-reh0.onrender.com/api/health" target="_blank" rel="noopener">Check Live API</a>
+          </div>
+          <div class="hero-stack-row">
+            <span class="stack-chip">React Native</span>
+            <span class="stack-chip">TypeScript</span>
+            <span class="stack-chip">Express</span>
+            <span class="stack-chip">PostgreSQL</span>
+            <span class="stack-chip">Prisma</span>
+            <span class="stack-chip">JWT</span>
+          </div>
+        </div>
+
+        <div class="ticket-stage">
+          <div class="ticket-float float-1">
+            <div class="fl-label mono">UPTIME</div>
+            <div class="fl-value">LIVE</div>
+          </div>
+          <div class="ticket">
+            <div class="ticket-perf"></div>
+            <div class="ticket-top">
+              <div>
+                <div class="ticket-id">JOB #A55EB3 — HVAC SERVICE</div>
+                <div class="ticket-title">Fix AC Unit</div>
+              </div>
+              <div class="ticket-stamp">DONE</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">Customer</div>
+              <div class="ticket-value">Rajesh Kumar — MG Road, Pune</div>
+            </div>
+            <div class="ticket-field">
+              <div class="ticket-label">Assigned To</div>
+              <div class="ticket-value small">John Technician · Priority: High</div>
+            </div>
+            <div class="ticket-field" style="margin-bottom:0;">
+              <div class="ticket-label">Status History</div>
+              <div class="lifecycle">
+                <span class="life-step done">ASSIGNED</span>
+                <span class="life-arrow">→</span>
+                <span class="life-step done">ACCEPTED</span>
+                <span class="life-arrow">→</span>
+                <span class="life-step done">IN PROGRESS</span>
+                <span class="life-arrow">→</span>
+                <span class="life-step active">COMPLETED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats-bar">
+    <div class="wrap">
+      <div class="stats-row">
+        <div class="stat"><div class="stat-num mono">11+</div><div class="stat-label">DATA MODELS</div></div>
+        <div class="stat"><div class="stat-num mono">9</div><div class="stat-label">CORE MODULES</div></div>
+        <div class="stat"><div class="stat-num mono">20+</div><div class="stat-label">MOBILE SCREENS</div></div>
+        <div class="stat"><div class="stat-num mono">3</div><div class="stat-label">ROLE TYPES</div></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-eyebrow">What it does</div>
+        <h2 class="sec-title">One board for the whole team</h2>
+        <p class="sec-desc">Admins assign the work. Employees run the job from their phone. Everything in between is logged automatically.</p>
+      </div>
+
+      <div class="feat-grid reveal">
+        <div class="feat-card">
+          <span class="feat-tag">AUTH · RBAC</span>
+          <div class="feat-name">Role-based access</div>
+          <div class="feat-desc">JWT auth with access/refresh rotation across Admin, Manager, and Employee roles — enforced at the query level.</div>
+        </div>
+        <div class="feat-card">
+          <span class="feat-tag">TASKS</span>
+          <div class="feat-name">Lifecycle management</div>
+          <div class="feat-desc">A validated status machine from Pending to Completed, with a full timestamped audit trail on every change.</div>
+        </div>
+        <div class="feat-card">
+          <span class="feat-tag">GPS</span>
+          <div class="feat-name">Verified attendance</div>
+          <div class="feat-desc">Check-in and check-out capture real GPS coordinates, with working hours calculated automatically.</div>
+        </div>
+        <div class="feat-card">
+          <span class="feat-tag">MAPS</span>
+          <div class="feat-name">Live team map</div>
+          <div class="feat-desc">Customer sites and active employees rendered on an interactive map — built on OpenStreetMap, zero API cost.</div>
+        </div>
+        <div class="feat-card">
+          <span class="feat-tag">PHOTOS</span>
+          <div class="feat-name">Proof of work</div>
+          <div class="feat-desc">Before/after job photos upload straight to Cloudinary from the field, attached to the task record.</div>
+        </div>
+        <div class="feat-card">
+          <span class="feat-tag">ALERTS</span>
+          <div class="feat-name">In-app notifications</div>
+          <div class="feat-desc">Assignment and completion events push a notification the moment they happen, with unread tracking.</div>
+        </div>
+        <div class="feat-card">
+          <span class="feat-tag">METRICS</span>
+          <div class="feat-name">Live analytics</div>
+          <div class="feat-desc">Completion rate, task mix, and workload — pulled straight from the database into charts on the dashboard.</div>
+        </div>
+        <div class="feat-card">
+          <span class="feat-tag">AUDIT</span>
+          <div class="feat-name">Action logging</div>
+          <div class="feat-desc">Sensitive actions — hires, cancellations — are recorded with who, what, and when, for accountability.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="lifecycle">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-eyebrow">How a job moves</div>
+        <h2 class="sec-title">The task lifecycle</h2>
+        <p class="sec-desc">Every job passes through the same guarded states — the backend rejects any transition that skips a step.</p>
+      </div>
+      <div class="cycle-strip reveal">
+        <div class="cycle-node on">
+          <div class="cycle-dot"></div>
+          <div class="cycle-name mono">ASSIGNED</div>
+          <div class="cycle-desc">Manager routes the job to an employee.</div>
+        </div>
+        <div class="cycle-node on">
+          <div class="cycle-dot"></div>
+          <div class="cycle-name mono">ACCEPTED</div>
+          <div class="cycle-desc">Employee confirms they're taking it on.</div>
+        </div>
+        <div class="cycle-node on">
+          <div class="cycle-dot"></div>
+          <div class="cycle-name mono">IN PROGRESS</div>
+          <div class="cycle-desc">Work starts — timer begins for duration tracking.</div>
+        </div>
+        <div class="cycle-node">
+          <div class="cycle-dot"></div>
+          <div class="cycle-name mono">ON HOLD</div>
+          <div class="cycle-desc">Paused if blocked — resumes back to In Progress.</div>
+        </div>
+        <div class="cycle-node on">
+          <div class="cycle-dot"></div>
+          <div class="cycle-name mono">COMPLETED</div>
+          <div class="cycle-desc">Closed out, duration logged, manager notified.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stack">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-eyebrow">Under the hood</div>
+        <h2 class="sec-title">The manifest</h2>
+        <p class="sec-desc">Built solo, end to end — mobile client, API, database schema, and deployment.</p>
+      </div>
+      <div class="manifest reveal">
+        <div class="manifest-col">
+          <div class="manifest-head"><span>Mobile</span><span>Client</span></div>
+          <ul class="manifest-list">
+            <li><span class="m-name">React Native · Expo</span><span class="m-role mono">SDK 57</span></li>
+            <li><span class="m-name">TypeScript</span><span class="m-role mono">strict</span></li>
+            <li><span class="m-name">React Navigation</span><span class="m-role mono">routing</span></li>
+            <li><span class="m-name">TanStack Query</span><span class="m-role mono">server state</span></li>
+            <li><span class="m-name">React Hook Form + Zod</span><span class="m-role mono">validation</span></li>
+            <li><span class="m-name">Expo Secure Store</span><span class="m-role mono">token storage</span></li>
+            <li><span class="m-name">Expo Location / Image Picker</span><span class="m-role mono">device APIs</span></li>
+            <li><span class="m-name">WebView + Leaflet</span><span class="m-role mono">maps</span></li>
+          </ul>
+        </div>
+        <div class="manifest-col">
+          <div class="manifest-head"><span>Backend</span><span>API</span></div>
+          <ul class="manifest-list">
+            <li><span class="m-name">Node.js · Express</span><span class="m-role mono">REST API</span></li>
+            <li><span class="m-name">PostgreSQL · Prisma</span><span class="m-role mono">Neon (cloud)</span></li>
+            <li><span class="m-name">JWT</span><span class="m-role mono">auth</span></li>
+            <li><span class="m-name">bcrypt</span><span class="m-role mono">hashing</span></li>
+            <li><span class="m-name">Zod</span><span class="m-role mono">validation</span></li>
+            <li><span class="m-name">Multer + Cloudinary</span><span class="m-role mono">image uploads</span></li>
+            <li><span class="m-name">express-rate-limit · Helmet</span><span class="m-role mono">security</span></li>
+            <li><span class="m-name">Jest · Supertest</span><span class="m-role mono">tests</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section grain">
+    <div class="wrap">
+      <div class="reveal">
+        <div class="sec-eyebrow" style="justify-content:center; display:flex;">Take a closer look</div>
+        <h2 class="cta-title">Read the code, or ping the API.</h2>
+        <p class="cta-desc">The full source — schema, API routes, and the mobile app — is public on GitHub. The backend is live right now on Render.</p>
+        <div class="cta-actions">
+          <a class="btn btn-solid" href="https://github.com/mayurishinde11/WorkFlowX" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.79-.25.79-.55 0-.27-.01-1.16-.02-2.11-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.69-1.28-1.69-1.04-.72.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.41-5.26 5.69.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.66.8.55A10.52 10.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+            github.com/mayurishinde11/WorkFlowX
+          </a>
+          <a class="btn btn-ghost" href="https://workflowx-api-reh0.onrender.com/api/health" target="_blank" rel="noopener">GET /api/health</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="foot-left">Built solo by Mayuri Shinde — React Native · Express · PostgreSQL</div>
+      <div class="foot-links">
+        <a href="https://github.com/mayurishinde11/WorkFlowX" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://workflowx-api-reh0.onrender.com/api/health" target="_blank" rel="noopener">Live API</a>
+        <a href="https://www.linkedin.com/in/mayuri-balasaheb-shinde" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  if('IntersectionObserver' in window){
+    document.documentElement.classList.add('js-ready');
+    var els = document.querySelectorAll('.reveal');
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, {threshold:0.12});
+    els.forEach(function(el){ io.observe(el); });
+  }
+</script>
+
+</body>
+</html>
